@@ -1,9 +1,11 @@
 import argparse
 import dataclasses
+import itertools
+import logging
 import subprocess  # nosec: B404
 from os import PathLike
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, List, Sequence, Union
 
 import pkg_resources
 
@@ -11,6 +13,8 @@ from make_better import __name__ as pkg_name
 
 if TYPE_CHECKING:
     _CMD = Sequence[Union[str, PathLike[str]]]
+
+logger = logging.getLogger(__name__)
 
 _MAKE_BETTER_CONFIGS_DIR = "configs/"
 
@@ -22,6 +26,7 @@ class _Options:
     config_path: Path
     output_succeed: bool
     line_length: int
+    check_formatting: bool
 
 
 @dataclasses.dataclass
@@ -73,6 +78,12 @@ def _parse_args() -> _Options:
         type=int,
         help="Configure line-length for isort and black",
     )
+    parser.add_argument(
+        "-g",
+        "--check-formatting",
+        action="store_true",
+        help="Checking code formatting. Has more priority then --autoformat",
+    )
     args = parser.parse_args()
 
     _check_paths_exist(args.paths)
@@ -84,10 +95,12 @@ def _parse_args() -> _Options:
         config_path=args.config_path,
         output_succeed=args.output_succeed,
         line_length=args.line_length,
+        check_formatting=args.check_formatting,
     )
 
 
 def _run_command(args: "_CMD") -> _CommandResult:
+    logger.debug(f"run command args: {args}")
     res = subprocess.run(
         args=args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
     )  # nosec B603
@@ -96,8 +109,17 @@ def _run_command(args: "_CMD") -> _CommandResult:
     )
 
 
-def _start_formatter(options: _Options) -> Tuple[_CommandResult, _CommandResult]:
-    return (
+def _start_formatter(options: _Options) -> List[_CommandResult]:
+    black_additional_options = []
+    isort_additional_options = []
+    if not options.check_formatting and not options.autoformat:
+        return []
+
+    if options.check_formatting:
+        black_additional_options.append("--check")
+        isort_additional_options.append("--check")
+
+    return [
         _run_command(
             [
                 "isort",
@@ -106,6 +128,7 @@ def _start_formatter(options: _Options) -> Tuple[_CommandResult, _CommandResult]
                 "--line-length",
                 str(options.line_length),
                 "--resolve-all-configs",
+                *isort_additional_options,
                 *options.paths,
             ]
         ),
@@ -116,16 +139,17 @@ def _start_formatter(options: _Options) -> Tuple[_CommandResult, _CommandResult]
                 str(options.config_path / "pyproject.toml"),
                 "--line-length",
                 str(options.line_length),
+                *black_additional_options,
                 *options.paths,
             ]
         ),
-    )
+    ]
 
 
 def _start_linter(
     options: _Options,
-) -> Tuple[_CommandResult, _CommandResult]:
-    return (
+) -> List[_CommandResult]:
+    return [
         _run_command(
             [
                 "bandit",
@@ -143,14 +167,14 @@ def _start_linter(
                 *options.paths,
             ]
         ),
-    )
+    ]
 
 
-def _output(results: List[_CommandResult], output_succeed: bool) -> None:
+def _make_better(options: _Options) -> None:
     has_error = False
-    for res in results:
+    for res in itertools.chain(_start_formatter(options), _start_linter(options)):
         is_error_code = bool(res.return_code)
-        if is_error_code or output_succeed:
+        if is_error_code or options.output_succeed:
             print(  # noqa: T201
                 f"{res.program} completed with code {res.return_code}\n{res.output}\n"
             )
@@ -162,11 +186,7 @@ def _output(results: List[_CommandResult], output_succeed: bool) -> None:
 
 def main() -> None:
     options = _parse_args()
-    result: List[_CommandResult] = []
-    if options.autoformat:
-        result.extend(_start_formatter(options))
-    result.extend(_start_linter(options))
-    _output(result, options.output_succeed)
+    _make_better(options)
 
 
 if __name__ == "__main__":
