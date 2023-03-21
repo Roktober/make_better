@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "make_better"
-version = "0.2.0"
+version = "0.3.0"
 description = "Easy lint and format you code"
 authors = ["roktober"]
 readme = "README.md"
