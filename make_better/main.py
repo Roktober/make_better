@@ -3,19 +3,21 @@ import dataclasses
 import subprocess  # nosec: B404
 from os import PathLike
 from pathlib import Path
-from typing import Sequence, TypeAlias, Union
+from typing import TYPE_CHECKING, List, Sequence, Tuple, Union
 
 import pkg_resources
 
 from make_better import __name__ as pkg_name
 
+if TYPE_CHECKING:
+    _CMD = Sequence[Union[str, PathLike[str]]]
+
 _MAKE_BETTER_CONFIGS_DIR = "configs/"
-_CMD: TypeAlias = Sequence[Union[str, PathLike[str]]]
 
 
 @dataclasses.dataclass
 class _Options:
-    paths: list[Path]
+    paths: List[Path]
     autoformat: bool
     config_path: Path
     output_succeed: bool
@@ -34,7 +36,7 @@ def _check_path_exist(path: Path) -> None:
         raise ValueError(f"Path '{path}' does not exist")
 
 
-def _check_paths_exist(paths: list[Path]) -> None:
+def _check_paths_exist(paths: List[Path]) -> None:
     for path in paths:
         _check_path_exist(path)
 
@@ -85,7 +87,7 @@ def _parse_args() -> _Options:
     )
 
 
-def _run_command(args: _CMD) -> _CommandResult:
+def _run_command(args: "_CMD") -> _CommandResult:
     res = subprocess.run(
         args=args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
     )  # nosec B603
@@ -94,7 +96,7 @@ def _run_command(args: _CMD) -> _CommandResult:
     )
 
 
-def _start_formatter(options: _Options) -> tuple[_CommandResult, _CommandResult]:
+def _start_formatter(options: _Options) -> Tuple[_CommandResult, _CommandResult]:
     return (
         _run_command(
             [
@@ -122,7 +124,7 @@ def _start_formatter(options: _Options) -> tuple[_CommandResult, _CommandResult]
 
 def _start_linter(
     options: _Options,
-) -> tuple[_CommandResult, _CommandResult]:
+) -> Tuple[_CommandResult, _CommandResult]:
     return (
         _run_command(
             [
@@ -144,7 +146,7 @@ def _start_linter(
     )
 
 
-def _output(results: list[_CommandResult], output_succeed: bool) -> None:
+def _output(results: List[_CommandResult], output_succeed: bool) -> None:
     has_error = False
     for res in results:
         is_error_code = bool(res.return_code)
@@ -160,7 +162,7 @@ def _output(results: list[_CommandResult], output_succeed: bool) -> None:
 
 def main() -> None:
     options = _parse_args()
-    result: list[_CommandResult] = []
+    result: List[_CommandResult] = []
     if options.autoformat:
         result.extend(_start_formatter(options))
     result.extend(_start_linter(options))
