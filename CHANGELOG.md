@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog][keepachangelog] and this project adher
 
 ## UNRELEASED
 
-### Added
+### v0.2.0
 
 - Ability to set multiple paths
 - Ignore TC003 because it is not helpful
