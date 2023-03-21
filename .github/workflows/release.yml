@@ -1,0 +1,30 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Get the tag name
+        run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+
+      - name: Build release notes
+        run: sed "1,/## ${{ env.TAG }}/d;/## v/Q" ./CHANGELOG.md > release.txt
+
+      - name: Build and publish to pypi
+        uses: JRubics/poetry-publish@v1.16
+        with:
+          pypi_token: ${{ secrets.PYPI_API_TOKEN }}
+          ignore_dev_requirements: "yes"
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: release.txt

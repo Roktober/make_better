@@ -30,3 +30,7 @@ make_better --autoformat
 
 This will run the preconfigured linters and code formatter on your code. Any potential issues will be flagged, and your
 code will be formatted according to best practices.
+
+## Why line-length 90
+
+We use a line length of 90, so that people on laptops with a diagonal of 16 do not have problems during the review
