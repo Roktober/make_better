@@ -56,7 +56,6 @@ disallow_untyped_defs = true
 python = "^3.8.1"
 bandit = {extras = ["toml"], version = "^1.7.5"}
 flake8-bugbear = "^23.2.13"
-flake8-builtins = "^2.1.0"
 flake8-print = "^5.0.0"
 flake8-return = "^1.2.0"
 black = "^23.1.0"
@@ -65,9 +64,10 @@ flake8 = "^6.0.0"
 flake8-comprehensions = "^3.10.1"
 flake8-datetimez = "^20.10.0"
 flake8-import-conventions = "^0.1.0"
-flake8-simplify = "^0.19.3"
 flake8-use-pathlib = "^0.3.0"
 tryceratops = "^1.1.0"
+flake8-async = "^22.11.14"
+flake8-encodings = "^0.5.0.post1"
 
 [tool.poetry.dev-dependencies]
 types-setuptools = "^67.6.0.0"

@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog][keepachangelog] and this project adheres to [Semantic Versioning][semver].
 
+## v0.4.0
+
+### Added
+
+- flake8-async, flake8-encodings
+
+### Removed
+
+- flake8-builtins, flake8-simplify because they set the code style and do not protect against bugs
+
 ## v0.3.0
 
 ### Added
