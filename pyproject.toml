@@ -19,6 +19,7 @@ classifiers = [
   "License :: OSI Approved :: MIT License",
   "Typing :: Typed",
 ]
+keywords = ["autoformat", "flake8", "lint"]
 
 packages = [{include = "make_better"}]
 
