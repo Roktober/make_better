@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog][keepachangelog] and this project adheres to [Semantic Versioning][semver].
 
+## v0.5.0
+
+### Added
+
+- Ignore TC401 because it is not helpful
+
 ## v0.4.0
 
 ### Added
